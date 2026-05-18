@@ -17,10 +17,18 @@ class NovelController extends Controller
             ->where('status', '!=', 'draft')
             ->orderByDesc('view_count');
  
+        if ($request->q) {
+            $query->where(function($q) use ($request){
+                $q->where('title', 'like', '%' .$request->q.'%');
+            });
+        }
+        if ($request->status){
+            $query->where('status', $request->status);
+        } else {$query->where('status', '!=', 'draft');}
         if ($request->genre) $query->where('genre', $request->genre);
         if ($request->tag) {
             $query->whereHas('tags', fn($q) => $q->where('slug', $request->tag));
-        }
+        }   
  
         return response()->json([
             'success' => true,
