@@ -52,6 +52,7 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::put('/me', [AuthController::class, 'updateMe']);
 
     // novels
+    Route::get('/dashboard', [NovelController::class, 'writerDashboard']);
     Route::get('/my-novels', [NovelController::class, 'myNovels']);
     Route::post('/novels', [NovelController::class, 'store']);
     Route::put('/novels/{id}', [NovelController::class, 'update']);
@@ -100,7 +101,7 @@ Route::middleware('auth:sanctum')->group(function (){
 
     // discovery
     Route::get('/feed', [DiscoveryController::class,'feed']);
- 
+
     // admin only
     Route::middleware('admin')->prefix('admin')->group(function () {
         Route::get('/stats', [AdminController::class,'stats']);
