@@ -93,6 +93,7 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::post('/follow', [InteractionController::class,'toggleFollow']);
     Route::get('/following', [InteractionController::class,'following']);
     Route::get('/followers', [InteractionController::class,'followers']);
+    Route::get('/users/{id}', [InteractionController::class,'users']);
 
     // reading progress & set tag
     Route::post('/reading-progress', [ReadingProgressController::class,'update']);
@@ -107,7 +108,9 @@ Route::middleware('auth:sanctum')->group(function (){
         Route::get('/stats', [AdminController::class,'stats']);
         Route::get('/users', [AdminController::class,'listUsers']);
         Route::put('/users/{id}/role', [AdminController::class,'changeRole']);
+        Route::get('/novels', [AdminController::class,'novels']);
         Route::delete('/novels/{id}', [AdminController::class,'deleteNovel']);
+        Route::get('/comments', [AdminController::class,'comments']);
         Route::delete('/comments/{id}', [AdminController::class,'deleteComment']);
     });
 });

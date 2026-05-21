@@ -14,14 +14,14 @@ class WorldController extends Controller
             'data'=>World::with('factions','characters')->get()
         ]);
     }
- 
+
     public function show($id) {
         return response()->json([
             'success'=>true,
             'data'=>World::with('factions','characters')->findOrFail($id)
         ]);
     }
- 
+
     // semua data worldbuilding sekaligus
     public function full($id) {
         $world = World::with([
@@ -34,7 +34,7 @@ class WorldController extends Controller
             'data'=>$world
         ]);
     }
- 
+
     public function store(Request $request) {
         if (!in_array($request->user()->role, ['writer','admin'])) abort(403);
         $data = $request->validate([
@@ -48,22 +48,22 @@ class WorldController extends Controller
             'data'=>$world
         ],201);
     }
- 
+
     public function update(Request $request, $id) {
         $world = World::findOrFail($id);
         if ($request->user()->id !== $world->user_id && $request->user()->role !== 'admin') abort(403);
-        
+
         $world->update($request->only(['name','description','map_image']));
         return response()->json([
             'success'=>true,
             'data'=>$world->fresh()
         ]);
     }
- 
+
     public function destroy(Request $request, $id) {
         $world = World::findOrFail($id);
         if ($request->user()->id !== $world->user_id && $request->user()->role !== 'admin') abort(403);
-        
+
         $world->delete();
         return response()->json([
             'success'=>true,

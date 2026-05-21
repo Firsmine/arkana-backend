@@ -51,4 +51,8 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function novel(){
+        return $this->hasMany(Novel::class);
+    }
 }

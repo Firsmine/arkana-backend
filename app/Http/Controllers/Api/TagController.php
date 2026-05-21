@@ -16,7 +16,7 @@ class TagController extends Controller
             'data'=>$tags
         ]);
     }
- 
+
     public function syncNovelTags(Request $request, $novelId) {
         $novel = Novel::findOrFail($novelId);
         if ($request->user()->id !== $novel->user_id) abort(403);
@@ -24,9 +24,9 @@ class TagController extends Controller
             'tag_ids'=>'required|array',
             'tag_ids.*'=>'exists:tags,id'
         ]);
- 
+
         $novel->tags()->sync($request->tag_ids);
- 
+
         return response()->json([
             'success'=>true,
             'message'=>'Tags updated',

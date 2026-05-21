@@ -11,29 +11,28 @@ use Illuminate\Support\Facades\Auth;
 class NovelController extends Controller
 {
     // list semua novel (public)
-    public function index(Request $request)
-    {
+    public function index(Request $request){
         $query = Novel::with(['author:id,name', 'tags'])
         ->withAvg('reviews', 'rating');
 
-    if ($request->status === 'published') {
-        $query->where('status', '!=', 'draft');
-    } elseif ($request->status) {
-        $query->where('status', $request->status);
-    } else {
-        $query->where('status', '!=', 'draft');
-    }
-    if ($request->q) {
-        $query->where('title', 'like', '%' . $request->q . '%');
-    }
-    if ($request->genre) {
-        $query->where('genre', $request->genre);
-    }
-    $novels = $query->orderByDesc('view_count')->paginate(12);
-    return response()->json([
-        'success' => true,
-        'data'    => $novels,
-    ]);
+        if ($request->status === 'published') {
+            $query->where('status', '!=', 'draft');
+        } elseif ($request->status) {
+            $query->where('status', $request->status);
+        } else {
+            $query->where('status', '!=', 'draft');
+        }
+        if ($request->q) {
+            $query->where('title', 'like', '%' . $request->q . '%');
+        }
+        if ($request->genre) {
+            $query->where('genre', $request->genre);
+        }
+        $novels = $query->orderByDesc('view_count')->paginate(12);
+        return response()->json([
+            'success' => true,
+            'data'    => $novels,
+        ]);
     }
 
     // detail (public)

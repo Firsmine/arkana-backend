@@ -23,11 +23,11 @@ class AdminController extends Controller
             ]
         ]);
     }
- 
+
     public function listUsers() {
         return response()->json(['success'=>true,'data'=>User::paginate(20)]);
     }
- 
+
     public function changeRole(Request $request, $id) {
         $user = User::findOrFail($id);
         $request->validate([
@@ -39,7 +39,16 @@ class AdminController extends Controller
             'message'=>'Role updated',
             'data'=>$user->fresh()]);
     }
- 
+
+    // show all novels for admin
+    public function novels(){
+        $novels = Novel::with('author:id,name')->latest()->get();
+        return response()->json([
+            'success' => true,
+            'data'    => $novels,
+        ]);
+    }
+
     public function deleteNovel($id) {
         Novel::findOrFail($id)->delete();
         return response()->json([
@@ -47,7 +56,16 @@ class AdminController extends Controller
             'message'=>'Novel was deleted by admin'
         ]);
     }
- 
+
+    // all comments for admin
+    public function comments() {
+        $comments = Comment::all();
+        return response()->json([
+            'success' => true,
+            'data' => $comments
+        ]);
+    }
+
     public function deleteComment($id) {
         Comment::findOrFail($id)->delete();
         return response()->json([

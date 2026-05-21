@@ -11,6 +11,7 @@ use App\Models\Novel;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class InteractionController extends Controller
 {
@@ -37,13 +38,13 @@ class InteractionController extends Controller
             'chapter_id'=>$chapterId,
             'content'=>$request->content,
         ]);
-        
+
         return response()->json([
             'success'=>true,
             'data'=>$comment->load('user:id,name,avatar')
         ],201);
     }
- 
+
     public function deleteComment(Request $request, $id) {
         $comment = Comment::findOrFail($id);
         if ($request->user()->id !== $comment->user_id && $request->user()->role !== 'admin') abort(403);
@@ -54,7 +55,7 @@ class InteractionController extends Controller
             'message'=>'Comment deleted'
         ]);
     }
- 
+
     // review
     public function listReviews($novelId) {
         $reviews = Review::with('user:id,name,avatar')
@@ -86,18 +87,18 @@ class InteractionController extends Controller
             'success'=>true,
             'data'=>$review]);
     }
- 
+
     public function deleteReview(Request $request, $id) {
         $review = Review::findOrFail($id);
         if ($request->user()->id !== $review->user_id) abort(403);
-        
+
         $review->delete();
         return response()->json([
             'success'=>true,
             'message'=>'Review deleted'
         ]);
     }
- 
+
     // bookmarks
     public function listBookmarks(Request $request) {
         $bookmarks = Bookmark::with('novel:id,title,cover_image,genre,status')
@@ -108,7 +109,7 @@ class InteractionController extends Controller
             'data'=>$bookmarks
         ]);
     }
- 
+
     public function toggleBookmark(Request $request) {
         $request->validate([
             'novel_id'=>'required|exists:novels,id'
@@ -130,7 +131,7 @@ class InteractionController extends Controller
             'bookmarked'=>true
         ],201);
     }
- 
+
     // follow
     public function toggleFollow(Request $request) {
         $request->validate([
@@ -149,14 +150,14 @@ class InteractionController extends Controller
                 'following'=>false
             ]);
         }
-        
+
         Follow::create(['follower_id'=>$request->user()->id,'following_id'=>$request->user_id]);
         return response()->json([
             'success'=>true,
             'following'=>true
         ],201);
     }
- 
+
     public function following(Request $request) {
         $ids = Follow::where('follower_id',$request->user()->id)
                         ->pluck('following_id');
@@ -167,7 +168,7 @@ class InteractionController extends Controller
                         ->get(['id','name','avatar','bio'])
         ]);
     }
- 
+
     public function followers(Request $request) {
         $ids = Follow::where('following_id',$request->user()->id)
                         ->pluck('follower_id');
@@ -176,5 +177,44 @@ class InteractionController extends Controller
             'data'=>User::whereIn('id',$ids)
                         ->get(['id','name','avatar','bio'])
         ]);
+    }
+
+    public function users($id){
+        try {
+            $user = User::withCount(['followers', 'followings'])
+                ->findOrFail($id);
+
+            $isFollowing = false;
+            if (Auth::check()) {
+                $isFollowing = Auth::user()->followings()->where('following_id', $id)->exists();
+            }
+
+            $novels = $user->novels()
+                ->where('status', 'published')
+                ->withCount('chapters')
+                ->withAvg('reviews', 'rating')
+                ->latest()
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'avatar' => $user->avatar,
+                    'bio' => $user->bio,
+                    'role' => $user->role,
+                    'followers_count' => $user->followers_count,
+                    'following_count' => $user->followings_count,
+                    'is_following' => $isFollowing,
+                    'novels' => $novels
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User tidak ditemukan'
+            ], 404);
+        }
     }
 }

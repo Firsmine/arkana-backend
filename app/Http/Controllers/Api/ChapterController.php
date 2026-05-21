@@ -11,20 +11,23 @@ use Illuminate\Support\Facades\Auth;
 class ChapterController extends Controller
 {
     // list chapter
-    public function index(Novel $novelId)
+    public function index(Novel $novel)
     {
-        $isOwner = Auth::check() && Auth::id() === $novelId->user_id;
- 
-        $chapters = $novelId->chapters()
+        $isOwner = Auth::check() && Auth::id() === $novel->user_id;
+
+        $chapters = $novel->chapters()
             ->when(!$isOwner, fn($q) => $q->where('status', 'published'))
-            ->get(['id','title','order','status','created_at']);
- 
+            ->orderBy('order', 'asc')
+            ->get(['id','novel_id','title','order','status','created_at']);
+
         return response()->json([
             'success' => true,
-            'data' => $chapters
+            'data' => [
+                'novel' => $novel,
+                'chapters' => $chapters, ]
         ]);
     }
- 
+
     // baca chapter
     public function show($novelId, $chapterId)
     {
@@ -32,27 +35,27 @@ class ChapterController extends Controller
             ->where('id', $chapterId)
             ->where('status', 'published')
             ->firstOrFail();
- 
+
         return response()->json(['success' => true, 'data' => $chapter->load('novel:id,title,user_id')]);
     }
- 
+
     // buat chapter (owner only)
     public function store(Request $request, $novelId)
     {
         $novel = Novel::findOrFail($novelId);
         if ($request->user()->id !== $novel->user_id) abort(403, 'Bukan novelmu');
- 
+
         $validated = $request->validate([
             'title' => 'required|string|min:3|max:255',
             'content' => 'required|string',
             'order' => 'required|integer|min:1',
             'status' => 'in:draft,published',
         ]);
- 
+
         $chapter = Chapter::create(array_merge($validated, ['novel_id' => $novelId]));
         return response()->json([
-            'success' => true, 
-            'message' => 'Chapter created', 
+            'success' => true,
+            'message' => 'Chapter created',
             'data' => $chapter
         ], 201);
     }
@@ -65,11 +68,11 @@ class ChapterController extends Controller
 
         $chapter->update($request->only(['title','content','order','status']));
         return response()->json([
-            'success' => true, 
+            'success' => true,
             'data' => $chapter->fresh()
         ]);
     }
- 
+
     // delete chapter (owner only)
     public function destroy(Request $request, $novelId, $chapterId)
     {
