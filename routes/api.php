@@ -22,7 +22,7 @@ Route::post('/login', [AuthController::class, 'login']);
 // public novel & chapter
 Route::get('/novels', [NovelController::class, 'index']);
 Route::get('/novels/{id}', [NovelController::class, 'show']);
-Route::get('/novels/{novelId}/chapters', [ChapterController::class, 'index']);
+Route::get('/novels/{novel}/chapters', [ChapterController::class, 'index']);
 Route::get('/novels/{novelId}/chapters/{chapterId}', [ChapterController::class, 'show']);
 
 // public worldbuilding
@@ -93,7 +93,7 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::post('/follow', [InteractionController::class,'toggleFollow']);
     Route::get('/following', [InteractionController::class,'following']);
     Route::get('/followers', [InteractionController::class,'followers']);
-    Route::get('/users/{id}', [InteractionController::class,'users']);
+    Route::get('/users/{user}', [InteractionController::class,'users']);
 
     // reading progress & set tag
     Route::post('/reading-progress', [ReadingProgressController::class,'update']);

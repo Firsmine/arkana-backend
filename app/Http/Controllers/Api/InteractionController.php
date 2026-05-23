@@ -179,14 +179,16 @@ class InteractionController extends Controller
         ]);
     }
 
-    public function users($id){
+    public function users(User $user) {
         try {
-            $user = User::withCount(['followers', 'followings'])
-                ->findOrFail($id);
-
+            $user->loadCount(['followers', 'followings']);
             $isFollowing = false;
-            if (Auth::check()) {
-                $isFollowing = Auth::user()->followings()->where('following_id', $id)->exists();
+
+            $currentUser = Auth::guard('sanctum')->user();
+            if ($currentUser) {
+                $isFollowing = Follow::where('follower_id', $currentUser->id)
+                    ->where('following_id', $user->id)
+                    ->exists();
             }
 
             $novels = $user->novels()
@@ -213,8 +215,8 @@ class InteractionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'User tidak ditemukan'
-            ], 404);
+                'message' => 'Detail Error: ' . $e->getMessage()
+            ], 500);
         }
     }
 }
