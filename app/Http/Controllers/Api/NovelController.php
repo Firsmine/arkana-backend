@@ -65,10 +65,15 @@ class NovelController extends Controller
         $validated = $request->validate([
             'title'       => 'required|string|max:200',
             'synopsis'    => 'nullable|string',
-            'cover_image' => 'nullable|string',
+            'cover_image' => 'nullable|image|max:2048',
             'genre'       => 'required|in:fantasy,dark_fantasy,isekai,adventure,romance_fantasy,mythology,sci_fantasy',
             'world_id'    => 'nullable|exists:worlds,id',
         ]);
+
+        if ($request->hasFile('cover_image')) {
+            $path = $request->file('cover_image')->store('covers', 'public');
+            $validated['cover_image'] = asset('storage/' . $path);
+        }
 
         $novel = Novel::create(array_merge($validated, ['user_id' => $request->user()->id]));
 
@@ -85,9 +90,17 @@ class NovelController extends Controller
         $novel = Novel::findOrFail($id);
         $this->authorizeOwner($request, $novel->user_id);
 
-        $novel->update($request->only([
-            'title','synopsis','cover_image','genre','status','world_id'
-        ]));
+        $data = $request->only([
+            'title','synopsis','genre','status','world_id'
+        ]);
+
+        if ($request->hasFile('cover_image')) {
+            $request->validate(['cover_image' => 'image|max:2048']);
+            $path = $request->file('cover_image')->store('covers', 'public');
+            $data['cover_image'] = asset('storage/' . $path);
+        }
+
+        $novel->update($data);
 
         return response()->json([
             'success' => true,

@@ -59,7 +59,7 @@ class AdminController extends Controller
 
     // all comments for admin
     public function comments() {
-        $comments = Comment::all();
+        $comments = Comment::with(['user:id,name,avatar', 'chapter:id,title'])->latest()->get();
         return response()->json([
             'success' => true,
             'data' => $comments

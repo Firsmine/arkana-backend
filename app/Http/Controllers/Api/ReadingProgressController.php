@@ -16,11 +16,10 @@ class ReadingProgressController extends Controller
             'scroll_percent' => 'required|integer|min:0|max:100',
         ]);
  
-        $progress = ReadingProgress::updateOrCreate([
-            'user_id'=>Auth::id(),
-            'chapter_id'=>$request->chapter_id,
-            'scroll_percent'=>$request->scroll_percent
-        ]);
+        $progress = ReadingProgress::updateOrCreate(
+            ['user_id'=>Auth::id(), 'chapter_id'=>$request->chapter_id],
+            ['scroll_percent'=>$request->scroll_percent]
+        );
  
         return response()->json([
             'success' => true,

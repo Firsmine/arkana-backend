@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Tag extends Model
 {
     protected $fillable = [
-        'tag_ids'
+        'name'
     ];
     public function novels() { 
         return $this->belongsToMany(Novel::class, 'novel_tag'); 
